@@ -2,7 +2,7 @@
 // 自分のサイトのファイル（本体・データ）はネット優先：更新をすぐ反映し、オフラインのときだけ保存版を使う。
 // Google Fonts はキャッシュ優先。
 // ファイル構成を変えたときは VERSION を上げると古いキャッシュが消えます。
-const VERSION = "moa-v2";
+const VERSION = "moa-v3";
 const SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
   "./data/words.js", "./data/grammar.js", "./data/writing.js",
