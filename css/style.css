@@ -211,6 +211,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 .bkta{font:12px ui-monospace,Menlo,monospace;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:8px;min-height:90px;width:100%;box-sizing:border-box;resize:vertical}
 .bkin summary{cursor:pointer;font-size:.88rem;font-weight:700;color:var(--muted)}
 .bkin-b{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.snaplist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px}
+.snap{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}
+.snap:first-child{border-top:0}
+.snap>div{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.snap b{font-size:.88rem;font-variant-numeric:tabular-nums}
+.snap em{font-style:normal;font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 5px}
+.snap small{flex-basis:100%;font-size:.76rem;color:var(--muted)}
+.snap .ghost{flex:none;width:auto;padding:6px 10px;font-size:.8rem;white-space:nowrap}
+.keep b{color:var(--fg)}
 .bkfile{display:block;text-align:center;box-sizing:border-box}
 #bk-st:empty{display:none}
 #bk-st.ng{color:var(--ng)}

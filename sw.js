@@ -8,7 +8,7 @@ const SHELL = [
   "./css/style.css",
   "./data/words.js", "./data/grammar.js", "./data/writing.js",
   "./js/tips.js", "./js/state.js", "./js/common.js", "./js/quiz.js", "./js/write51.js", "./js/gram.js",
-  "./js/menu.js", "./js/write53-54.js", "./js/book.js", "./js/log.js", "./js/main.js",
+  "./js/menu.js", "./js/write53-54.js", "./js/book.js", "./js/log.js", "./js/backup.js", "./js/main.js",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
 ];
 
