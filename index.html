@@ -844,8 +844,9 @@ const BUILTIN_KS = new Set(BUILTIN.map(w=>w.k));
 const EXTRA_W = (typeof EXTRA!=="undefined" && Array.isArray(EXTRA) ? EXTRA : [])
   .filter(w=>w && w.k && !BUILTIN_KS.has(w.k))
   .map((w,i)=>Object.assign({id:"x"+i},w,{set:"C",fixed:true}));
-let ALL = [];
+let ALL = [], groupsCache = null;
 function rebuild(){
+  groupsCache = null;
   const ks=new Set([...BUILTIN_KS, ...EXTRA_W.map(w=>w.k)]);
   ALL = BUILTIN.concat(EXTRA_W, custom.filter(w=>!ks.has(w.k)).map(w=>Object.assign({set:"C"},w)));
 }
@@ -857,7 +858,10 @@ const M_GROUPS = ["TOPIK中級"];        // この出典の単語は中級
 const isFB = w => w.set==="C" && B_GROUPS.includes(groupOf(w));
 const isFM = w => w.set==="C" && M_GROUPS.includes(groupOf(w));
 const isMid = w => w.set==="M" || isFM(w);
-function groups(){ const g=[]; ALL.forEach(w=>{ if(w.set==="C" && !isFB(w) && !isFM(w)){ const n=groupOf(w); if(!g.includes(n)) g.push(n) } }); return g }   // 頻出B・中級に入る出典は個別に出さない
+function groups(){
+  if(!groupsCache){ const g=[]; ALL.forEach(w=>{ if(w.set==="C" && !isFB(w) && !isFM(w)){ const n=groupOf(w); if(!g.includes(n)) g.push(n) } }); groupsCache=g }
+  return groupsCache.slice();
+}   // 頻出B・中級に入る出典は個別に出さない
 const groupList = n => ALL.filter(w=>w.set==="C" && groupOf(w)===n);
 const dotCls = w => isFB(w) ? "B" : isFM(w) ? "M" : w.set==="C" ? "C"+(Math.max(0,groups().indexOf(groupOf(w)))%3) : w.set;
 const wSetName = w => isFB(w) ? "頻出B · "+groupOf(w) : isFM(w) ? "中級 · "+groupOf(w) : w.set==="C" ? groupOf(w) : setName(w.set);
@@ -2844,15 +2848,21 @@ function renderList(){
   }
   bindList(list);
 }
+// 一覧では見出しだけ作り、中身（似てる単語など重い計算）は開いたときに作る
 function rowHtml(w){
+  const open=book.open===w.k;
+  return `<details data-k="${esc(w.k)}" ${open?"open":""}>
+      <summary><b><span class="dot ${dotCls(w)}"></span>${esc(w.k)}</b><span>${esc(w.j)}</span>${isDone(w.k)?(isDue(w.k)?`<em class="dueb">確認</em>`:`<em class="doneb">覚えた</em>`):weak[w.k]||isRepeat(w.k)?`<em class="weakb ${isRepeat(w.k)?"rp":""}" title="通算で間違えた回数">${isRepeat(w.k)?"くり返し ":""}×${missTot(w.k)}</em>`:streakOf(w.k)?stkHtml(w.k):"<i></i>"}</summary>
+      ${open?entryHtml(w):""}
+    </details>`;
+}
+function entryHtml(w){
   {
     const ns=notesFor(w.k);
     const auto=lookalikes(w,4,0).filter(x=>!ns.some(n=>n.w.includes(x.k))).slice(0,3);
     const simBtns=[...new Set(ns.flatMap(n=>n.w))].filter(k=>k!==w.k).map(k=>ALL.find(x=>x.k===k)).filter(Boolean)
       .concat(auto).map(x=>`<button type="button" data-jump="${esc(x.k)}"><b>${esc(x.k)}</b> ${esc(x.j)}</button>`).join("");
-    return `<details data-k="${esc(w.k)}" ${book.open===w.k?"open":""}>
-      <summary><b><span class="dot ${dotCls(w)}"></span>${esc(w.k)}</b><span>${esc(w.j)}</span>${isDone(w.k)?(isDue(w.k)?`<em class="dueb">確認</em>`:`<em class="doneb">覚えた</em>`):weak[w.k]||isRepeat(w.k)?`<em class="weakb ${isRepeat(w.k)?"rp":""}" title="通算で間違えた回数">${isRepeat(w.k)?"くり返し ":""}×${missTot(w.k)}</em>`:streakOf(w.k)?stkHtml(w.k):"<i></i>"}</summary>
-      <div class="entry">
+    return `<div class="entry">
         ${w.ex?`<div class="exrow">${speakBtn(w.ex)}<div><div class="exk">${esc(w.ex)}</div><div class="exj">${esc(w.exj||"")}</div></div></div>`:`<div class="exrow">${speakBtn(w.k)}<div class="exj">例文はまだありません</div></div>`}
         ${chunkOf(w)?`<p class="chunk"><span>セットで</span>${esc(chunkOf(w))}</p>`:""}
         ${w.note?`<div class="note">${esc(w.note)}</div>`:""}
@@ -2864,20 +2874,27 @@ function rowHtml(w){
         ${weak[w.k]?`<p class="wkst"><b>苦手</b>（通算 ${missTot(w.k)}回）　外れるまで<i>${Array.from({length:WEAK_CLEAR_N},(_,i)=>`<span class="${i<clrOf(w.k)?"on":""}"></span>`).join("")}</i> 日を変えて${WEAK_CLEAR_N}回続けて正解</p>`
           :missTot(w.k)?`<p class="wkst">通算 ${missTot(w.k)}回まちがえた${isRepeat(w.k)&&!isDone(w.k)?"・<b>くり返し苦手</b>（覚えたになると外れる）":""}</p>`:""}
         ${w.set==="C" && !w.fixed?`<button type="button" class="del" data-del="${esc(w.id||w.k)}">この単語を削除</button>`:""}
-      </div>
-    </details>`;
+      </div>`;
   }
 }
 function bindList(list){
-  list.querySelectorAll("details").forEach(d=>d.addEventListener("toggle",()=>{ if(d.open) book.open=d.dataset.k; else if(book.open===d.dataset.k) book.open=null }));
-  list.querySelectorAll("[data-jump]").forEach(b=>b.onclick=()=>{
+  list.querySelectorAll("details").forEach(d=>d.addEventListener("toggle",()=>{
+    if(d.open){
+      book.open=d.dataset.k;
+      if(!d.querySelector(".entry")){ const w=ALL.find(x=>x.k===d.dataset.k); if(w){ d.insertAdjacentHTML("beforeend",entryHtml(w)); bindEntry(d,list) } }
+    } else if(book.open===d.dataset.k) book.open=null;
+  }));
+  bindEntry(list,list);
+}
+function bindEntry(root,list){
+  root.querySelectorAll("[data-jump]").forEach(b=>b.onclick=()=>{
     book.q=""; book.f="all"; book.open=b.dataset.jump;
     document.getElementById("q").value=""; renderList();
     const el=list.querySelector(`details[data-k="${CSS.escape(b.dataset.jump)}"]`); if(el) el.scrollIntoView({block:"center"});
   });
-  list.querySelectorAll("[data-master]").forEach(b=>b.onclick=()=>{ const k=b.dataset.master; mastery.done[k]=today(); mastery.chk[k]=today(); mastery.streak[k]=Math.max(streakOf(k),MASTER_N); saveMastery(); renderList() });
-  list.querySelectorAll("[data-unmaster]").forEach(b=>b.onclick=()=>{ const k=b.dataset.unmaster; delete mastery.done[k]; delete mastery.chk[k]; delete mastery.last[k]; mastery.streak[k]=0; saveMastery(); renderList() });
-  list.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+  root.querySelectorAll("[data-master]").forEach(b=>b.onclick=()=>{ const k=b.dataset.master; mastery.done[k]=today(); mastery.chk[k]=today(); mastery.streak[k]=Math.max(streakOf(k),MASTER_N); saveMastery(); renderList() });
+  root.querySelectorAll("[data-unmaster]").forEach(b=>b.onclick=()=>{ const k=b.dataset.unmaster; delete mastery.done[k]; delete mastery.chk[k]; delete mastery.last[k]; mastery.streak[k]=0; saveMastery(); renderList() });
+  root.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
     if(!b.classList.contains("arm")){ b.classList.add("arm"); b.textContent="もう一度押すと削除"; return }
     delWord(b.dataset.del);
   });
