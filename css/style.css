@@ -26,10 +26,16 @@ h1{font-family:var(--jp);font-weight:700;font-size:1.45rem;margin:0;text-wrap:ba
 .hd-sub span.is-weak{color:var(--ng);background:var(--ng-bg)}
 h1.ko{font-family:var(--ko);font-size:1.6rem}
 h1 small{display:block;font-family:var(--jp);font-weight:500;font-size:.8rem;color:var(--muted);letter-spacing:.04em}
-.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--sunk);border-radius:12px;padding:4px;gap:4px}
+/* タブ：画面の下に固定（親指で届くように） */
+:root{--tabh:60px}
+.undo{display:block;margin:10px auto 0;font-size:.82rem;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;position:fixed;z-index:20;left:0;right:0;bottom:0;margin:0 auto;max-width:512px;box-sizing:border-box;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--surface) 92%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+@media (min-width:513px){.tabs{border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0}}
+body:has(.tabs) .wrap{padding-bottom:calc(var(--tabh) + 24px + env(safe-area-inset-bottom,0px))}
+body:has(.tabs) .startbar{bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px));padding-bottom:14px}
 .tabs button{font:inherit;font-weight:700;border:0;background:transparent;color:var(--muted);padding:9px;border-radius:9px;cursor:pointer}
-.tabs button[aria-selected="true"]{background:var(--seg-on);color:var(--fg);box-shadow:var(--shadow)}
-.tabs button{white-space:nowrap;font-size:.88rem;padding:9px 2px}
+.tabs button[aria-selected="true"]{background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent)}
+.tabs button{white-space:nowrap;font-size:.88rem;padding:10px 2px;min-height:44px}
 .label{font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--muted);margin-bottom:7px}
 .group{display:flex;flex-direction:column}
 .seg button{font:inherit;cursor:pointer;color:var(--fg);transition:background-color .15s,color .15s,box-shadow .15s}

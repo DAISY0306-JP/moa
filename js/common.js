@@ -81,12 +81,25 @@ function tabs(){
     <button role="tab" id="tab-log" aria-selected="${view==="log"}">記録</button></div>`;
 }
 function bindTabs(){
-  document.getElementById("tab-home").onclick=()=>{view="home";home()};
-  document.getElementById("tab-book").onclick=()=>{view="book";bookView()};
-  document.getElementById("tab-write").onclick=()=>{view="write";writeView()};
-  document.getElementById("tab-gram").onclick=()=>{view="gram";gramView()};
-  document.getElementById("tab-log").onclick=()=>{view="log";logView()};
+  Object.keys(TAB_VIEWS).forEach(v=>document.getElementById("tab-"+v).onclick=()=>goTab(v));
 }
+// タブごとのスクロール位置と最後に開いていたタブを覚えておき、戻ったとき・開き直したときに続きから
+const TAB_VIEWS = {home:()=>home(), book:()=>bookView(), gram:()=>gramView(), write:()=>writeView(), log:()=>logView()};
+const tabScroll = Object.assign({}, store.get("kq-scroll",{}));
+function saveNav(){
+  if(TAB_VIEWS[view]) tabScroll[view]=Math.round(scrollY);
+  store.set("kq-scroll",tabScroll);
+  store.set("kq-nav",{view:TAB_VIEWS[view]?view:"home", bf:book.f, bo:book.open});
+}
+function goTab(v){
+  if(TAB_VIEWS[view]) tabScroll[view]=Math.round(scrollY);
+  view=v; TAB_VIEWS[v]();
+  scrollTo(0,tabScroll[v]||0);
+  saveNav();
+}
+if("scrollRestoration" in history) history.scrollRestoration="manual";
+addEventListener("pagehide",saveNav);
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") saveNav() });
 
 // ---------- 活用 ----------
 const H0=0xAC00;
@@ -240,3 +253,23 @@ function clozeHtml(w,filled){
   return esc(w.ex.slice(0,i))+mid+esc(w.ex.slice(i+b.length));
 }
 const posOf = w => advOf(w)?"adv":isPred(w)?"pred":"noun";
+
+// ---------- 押しまちがいの取り消し ----------
+// 間違えたときだけ答える前の記録を控えておき、「押しまちがい」でその問題をやり直せる（苦手・覚えた・学習記録も元に戻る）
+let undoSnap = null;
+function snapAnswer(r){
+  undoSnap = {r, state:JSON.stringify({weak,wmeta,mastery,dlog,gweak}),
+    run:Object.fromEntries(Object.entries(r).map(([k,v])=>[k, k!=="list"&&Array.isArray(v) ? v.slice() : v]))};
+}
+function offerUndo(after,again){
+  const snap=undoSnap; if(!snap || !after) return;
+  after.insertAdjacentHTML("beforeend",`<button type="button" class="linkbtn undo" id="undo">押しまちがい（この問題をやり直す）</button>`);
+  document.getElementById("undo").onclick=()=>{
+    const s=JSON.parse(snap.state);
+    weak=s.weak; wmeta=s.wmeta; mastery=s.mastery; dlog=s.dlog; gweak=s.gweak;
+    saveWeak(); saveMastery(); saveDlog(); saveGWeak();
+    Object.keys(snap.r).forEach(k=>{ if(!(k in snap.run)) delete snap.r[k] });
+    Object.assign(snap.r, snap.run);
+    undoSnap=null; again();
+  };
+}

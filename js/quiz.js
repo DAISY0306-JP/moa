@@ -197,11 +197,13 @@ function question(){
       btns.forEach(x=>{x.disabled=true; if(x.dataset.k===w.k) x.classList.add("right")});
       if(!right) b.classList.add("wrong");
       const picked = ALL.find(x=>x.k===b.dataset.k);
+      if(!right) snapAnswer(run);
       const ev=record(w,right,right?null:picked);
       reveal();
       if(right){ setTimeout(next, ev==="done"||ev==="kept"?1400:cloze?1300:(ev==="up"?900:650)) }
       else {
         after.innerHTML=`<p class="confused">選んだのは <b>${esc(picked.k)}</b>＝${esc(picked.j)}</p>${tipBlock(w.k,picked.k)}${picDiff(w.k,picked.k)}`;
+        offerUndo(after,question);
         showNext();
       }
     });
@@ -215,6 +217,7 @@ function question(){
       done=true; inp.disabled=true; document.getElementById("tsub").disabled=true; give.hidden=true;
       const g=norm(got), right = !!g && accept.map(norm).includes(g);
       const other = !right && g ? ALL.find(x=>x.k!==w.k && norm(x.k)===g) : null;
+      if(!right && g) snapAnswer(run);
       record(w,right,other||null);
       reveal();
       form.classList.add(right?"is-right":"is-wrong");
@@ -230,6 +233,7 @@ function question(){
           </div>
           ${other?`<p class="confused">それは <b>${esc(other.k)}</b>＝${esc(other.j)}</p>${tipBlock(w.k,other.k)}${picDiff(w.k,other.k)}`
                  :(near?`<p class="verdict near">おしい！つづりが少し違います</p>`:"")+picFor(w.k)}`;
+        offerUndo(after,question);
       }
       showNext();
     }
@@ -298,11 +302,11 @@ function conjQuestion(){
     btns.forEach(b=>b.onclick=()=>{
       const right = ans.all.includes(b.dataset.v);
       btns.forEach(x=>{x.disabled=true; if(ans.all.includes(x.dataset.v)) x.classList.add("right")});
-      if(!right) b.classList.add("wrong");
+      if(!right){ b.classList.add("wrong"); snapAnswer(run) }
       record(w,right,right?null:{k:b.dataset.v,j:""});
       reveal();
       if(right && !note && !hanNote){ setTimeout(next,700) }
-      else { after.innerHTML=(right?`<p class="verdict ok">正解！</p>`:"")+explain(); showNext() }
+      else { after.innerHTML=(right?`<p class="verdict ok">正解！</p>`:"")+explain(); if(!right) offerUndo(after,conjQuestion); showNext() }
     });
   } else if(opt.mode==="type"){
     const form=document.getElementById("tf"), inp=document.getElementById("ti"), give=document.getElementById("giveup");
@@ -312,12 +316,14 @@ function conjQuestion(){
     function finish(got){
       done=true; inp.disabled=true; document.getElementById("tsub").disabled=true; give.hidden=true;
       const g=norm(got), right = !!g && ans.all.map(norm).includes(g);
+      if(!right && g) snapAnswer(run);
       record(w,right,right||!g?null:{k:g,j:""});
       reveal();
       form.classList.add(right?"is-right":"is-wrong");
       after.innerHTML = right ? `<p class="verdict ok">正解！</p>${explain()}`
         : (g?`<div class="typed"><div><span>あなた</span><b>${diffHtml(g,ans.m)}</b></div><div><span>正解</span><b>${esc(ans.m)}</b></div></div>
               ${lev(jamo(g),jamo(ans.m))<=2?`<p class="verdict near">おしい！</p>`:""}`:"") + explain();
+      if(!right && g) offerUndo(after,conjQuestion);
       showNext();
     }
     form.onsubmit=e=>{ e.preventDefault(); if(done||composing) return; if(!norm(inp.value)){ inp.focus(); return } finish(inp.value) };

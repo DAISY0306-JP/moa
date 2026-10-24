@@ -82,6 +82,9 @@ function logToday(key,right){
   const d=today(), o=dlog[d]=dlog[d]||{}; o[key]=(o[key]||0)+1;
   if(typeof right==="boolean"){ o[key+"a"]=(o[key+"a"]||0)+1; if(right) o[key+"o"]=(o[key+"o"]||0)+1 }   // 正答率用（wa/wo・ga/go）
   Object.keys(dlog).sort().slice(0,-400).forEach(k=>delete dlog[k]);
+  saveDlog();
+}
+function saveDlog(){
   store.set("kq-dlog",dlog);
   if(!lDoc) return; clearTimeout(lTimer);
   lTimer=setTimeout(()=>{ lDoc.set({days:JSON.parse(JSON.stringify(dlog))}).catch(()=>{}) },800);
@@ -146,9 +149,10 @@ function stkHtml(k,ev){
 let opt = Object.assign({set:"M",form:"word",mode:"choice",dir:"k2j",n:"20",dist:"sim",cform:"mix",incDone:"no"}, store.get("kq-opt",{}));
 // 4級向けに切りかえたとき1回だけ：出題範囲を中級に
 try{ if(!store.get("kq-mig-goal4",false)){ opt.set="M"; store.set("kq-opt",opt); store.set("kq-mig-goal4",true) } }catch(e){}
-let view = {"#book":"book","#write":"write","#gram":"gram","#log":"log"}[location.hash]||"home";
+const lastNav = store.get("kq-nav",{});   // 前回最後に開いていたタブ（js/common.js の saveNav）
+let view = {"#book":"book","#write":"write","#gram":"gram","#log":"log"}[location.hash]||(["book","write","gram","log"].includes(lastNav.view)?lastNav.view:"home");
 let run = null;
-let book = {q:"",f:"all",open:null};
+let book = {q:"",f:lastNav.bf||"all",open:lastNav.bo||null};
 
 // ---------- 保存（db があればそちら、なければこのブラウザ） ----------
 let db=null, weakDoc=null, weakTimer=null, weakChain=Promise.resolve(), dbFail=false;

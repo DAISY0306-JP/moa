@@ -88,7 +88,7 @@ function gQuestion(){
   btns.forEach(b=>b.onclick=()=>{
     const [f,m]=opts[+b.dataset.i], right=m==="ok";
     btns.forEach(x=>{ x.disabled=true; if(opts[+x.dataset.i][1]==="ok") x.classList.add("right") });
-    if(!right) b.classList.add("wrong");
+    if(!right){ b.classList.add("wrong"); snapAnswer(grun) }
     logToday("g",right);
     if(right){ grun.ok++; delete gweak[it.id] } else { grun.miss.push({it,picked:[f,m]}); gweak[it.id]=(gweak[it.id]||0)+1 }
     saveGWeak();
@@ -104,6 +104,7 @@ function gQuestion(){
         ${all.map(([x,l])=>`<div class="dr"><b>${esc(x)}</b><span>${esc(l)}${isUpper(l)?" · 上級":""}</span></div>`).join("")}</div>
       <p class="fpt">${esc(it.g.note)}</p>
     </div>`;
+    if(!right) offerUndo(document.getElementById("after"),gQuestion);
     const n=document.getElementById("next"); n.hidden=false; n.onclick=gNext; n.focus();
   });
 }
@@ -242,7 +243,7 @@ function sQuestion(){
   btns.forEach(b=>b.onclick=()=>{
     const [f,gid,ok]=opts[+b.dataset.i];
     btns.forEach(y=>{ y.disabled=true; if(opts[+y.dataset.i][2]) y.classList.add("right") });
-    if(!ok) b.classList.add("wrong");
+    if(!ok){ b.classList.add("wrong"); snapAnswer(srun) }
     const key = cloze ? x.id : "m:"+x.id;
     logToday("g",ok);
     if(ok){ srun.ok++; delete gweak[key] } else { srun.miss.push({x,f,gid}); gweak[key]=(gweak[key]||0)+1 }
@@ -263,6 +264,7 @@ function sQuestion(){
       ${diff?`<div class="fdiff"><span class="tl">似ている文法の違い</span>${diffRows(diff[1])}</div>`:""}
       ${["e01","e02","e03"].includes(g.id)?`<div class="fdiff"><span class="tl">絵で見る：놓다 と 두다</span>${picCompare(["놓다","두다"])}</div>`:""}
     </div>`;
+    if(!ok) offerUndo(document.getElementById("after"),sQuestion);
     const n=document.getElementById("next"); n.hidden=false; n.onclick=sNext; n.focus();
   });
 }
