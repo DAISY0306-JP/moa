@@ -52,7 +52,7 @@ function todayCard(){
   const head = dl>0 ? `<b class="dl">あと<span>${dl}</span>日</b>` : dl===0 ? `<b class="dl">今日が試験日</b>` : `<b class="dl small">試験おつかれさま</b>`;
   return `<section class="today">
     <div class="tdh">
-      <div class="ex-l"><small>TOPIK ${esc(fmtDate(exam.date))}${exam.tent?"（仮）":""}</small>${head}</div>
+      <div class="ex-l"><small>TOPIK ${esc(fmtDate(exam.date))}${exam.tent?"（仮）":""}${dl>=0?`<button type="button" class="infobtn" id="tinfo" aria-expanded="false" aria-label="このメニューの説明">？</button>`:""}</small>${head}</div>
       <button type="button" class="goal" id="goalbtn"><small>目標</small><b>${exam.goal}級</b></button>
     </div>
     <div class="goaledit" id="goaledit" hidden>
@@ -61,14 +61,16 @@ function todayCard(){
       <button type="button" class="primary sm" id="ex-save">保存</button>
     </div>
     ${dl<0?`<p class="hint">次の試験日と目標（4級など）を設定すると、そこから逆算してメニューを作り直します。</p>`:""}
+    <div class="tinfo-b" id="tinfo-b" hidden>
     ${exam.tent&&dl>0?`<p class="hint">試験日は仮です。日程が発表されたら「目標」を押して直してください。4級を目指すあいだ、新しい単語は中級・4級から出し、初級（頻出ABC）は苦手と確認だけにしています。</p>`:""}
+    ${dl>=MASTER_N?`<p class="hint">新しい単語は ${esc(fmtDate(addDays(exam.date,-MASTER_N)))} までに全部始めて、試験前日までに「覚えた」がそろうペースで出しています。</p>`:""}
+    </div>
     <div class="tasks">
       ${task("word", wDone, "単語", wDone?"今日の分は終わり！":`確認 ${wp.due.length}・続き ${wp.cont.length}・新しく ${wp.newPick.length}`, wDone?"✓":`${wp.list.length}語`, wDone?"もう少し":"始める")}
       ${task("gram", gDone, "文法 使い分け", `${gLvGoal()}級までの文法から${gp.done?`・今日 ${gp.done}問`:""}`, gDone?"✓":`${Math.min(gp.done,G_DAILY)}/${G_DAILY}`, gDone?"もう少し":"始める")}
       ${task("write", wr.wroteToday, exam.goal>=4?"書き 51〜54":"書き 51・52", wr.wroteToday?"今日は書いた！":`次は ${esc(wr.next.id)}「${esc(wr.next.title)}」`, wr.wroteToday?"✓":"1問", wr.wroteToday?"もう1問":"書く")}
     </div>
     ${dl>0&&dl<MASTER_N?`<p class="hint">試験直前なので、新しい単語は増やさず「確認」と「続き」に集中する配分にしています。</p>`:""}
-    ${dl>=MASTER_N?`<p class="hint">新しい単語は ${esc(fmtDate(addDays(exam.date,-MASTER_N)))} までに全部始めて、試験前日までに「覚えた」がそろうペースで出しています。</p>`:""}
   </section>`;
 }
 function bindTodayCard(){
@@ -76,6 +78,8 @@ function bindTodayCard(){
   const ed=document.getElementById("goaledit");
   let goal=exam.goal;
   gb.onclick=()=>{ ed.hidden=!ed.hidden };
+  const ib=document.getElementById("tinfo");
+  if(ib) ib.onclick=()=>{ const b=document.getElementById("tinfo-b"); b.hidden=!b.hidden; ib.setAttribute("aria-expanded",!b.hidden) };
   ed.querySelectorAll("[data-goal]").forEach(b=>b.onclick=()=>{ goal=+b.dataset.goal; ed.querySelectorAll("[data-goal]").forEach(x=>x.setAttribute("aria-pressed",x===b)) });
   document.getElementById("ex-save").onclick=()=>{
     const d=document.getElementById("ex-date").value;

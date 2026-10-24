@@ -143,7 +143,7 @@ function stkHtml(k,ev){
     return isDue(k) ? `<span class="stk due">確認</span>` : `<span class="stk done">覚えた</span>`;
   }
   const n=Math.min(streakOf(k),MASTER_N);
-  const note = ev==="nocount" ? "この形式は数えない" : (ev==="today"||(!ev && countedToday(k))) ? "今日はカウント済み" : (!ev && !curCountable) ? "この形式は数えない" : "";
+  const note = ev==="nocount" ? "この答え方は「覚えた」に数えない" : (ev==="today"||(!ev && countedToday(k))) ? "今日はカウント済み" : (!ev && !curCountable) ? "この答え方は「覚えた」に数えない" : "";
   return `<span class="stk ${ev==="reset"||ev==="lost"?"reset":""} ${ev==="up"?"pop":""}" title="連続正解 ${n}/${MASTER_N}（1日1回まで）">${Array.from({length:MASTER_N},(_,i)=>`<i class="${i<n?"on":""}"></i>`).join("")}${note?`<small>${note}</small>`:""}</span>`;
 }
 let opt = Object.assign({set:"M",form:"word",mode:"choice",dir:"k2j",n:"20",dist:"sim",cform:"mix",incDone:"no"}, store.get("kq-opt",{}));

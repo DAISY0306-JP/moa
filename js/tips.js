@@ -188,12 +188,14 @@ function trendCard(){
   const rows = TRENDS.map(t=>[t,trendList(t.id)]).filter(([,l])=>l.length);
   const rl = repeatList();
   if(!rows.length && !udWords().length && !rl.length) return "";
-  return `<section class="today trend"><div class="ex-l"><small>苦手の傾向と対策</small><span class="dl small">苦手 ${weakList().length}語の内訳</span></div>
+  const picked = opt.set==="RW" || opt.set==="UD" || opt.set.startsWith("WT:");
+  return `<details class="today trend" id="trendbox" ${ui.trend||picked?"open":""}><summary class="foldh"><span><b>苦手の傾向と対策</b><small>苦手 ${weakList().length}語の内訳${rl.length?`・くり返し ${rl.length}語`:""}</small></span><i aria-hidden="true"></i></summary>
     <div class="trows">${rl.length?`<button type="button" class="trow rw" data-rw aria-pressed="${opt.set==="RW"}">
       <b>くり返し苦手</b><span class="tn">${rl.length}語</span><small>通算${REPEAT_N}回以上間違えた単語。日→韓で書いて答える・セットで覚える</small><span class="ck" aria-hidden="true"></span></button>`:""}${udWords().length?`<button type="button" class="trow" data-ud aria-pressed="${opt.set==="UD"}">
       <b>増える・減る</b><span class="tn">${udWords().length}語${udWords().filter(w=>weak[w.k]).length?`（苦手 ${udWords().filter(w=>weak[w.k]).length}）`:""}</span><small>例文の穴埋めで「が増える／を増やす」を見分ける</small><span class="ck" aria-hidden="true"></span></button>`:""}${rows.map(([t,l])=>`<button type="button" class="trow" data-trend="${t.id}" aria-pressed="${opt.set==="WT:"+t.id}">
       <b>${esc(t.name)}</b><span class="tn">${l.length}語</span><small>${esc(t.how)}</small><span class="ck" aria-hidden="true"></span></button>`).join("")}</div>
-    <p class="thint">選ぶと出題範囲がその苦手だけになります。答えのあとに漢字・セット・活用のヒントが出ます。</p></section>`;
+    <p class="thint">選ぶと出題範囲がその苦手だけになります。答えのあとに漢字・セット・活用のヒントが出ます。</p>
+    ${picked?`<button type="button" class="primary sm" id="tstart">「${esc(rangeName(opt.set))}」ではじめる</button>`:""}</details>`;
 }
 
 // ---------- 絵で見る：入れる・置く・かける・貼る ----------

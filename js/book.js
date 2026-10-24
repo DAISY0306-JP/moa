@@ -271,9 +271,10 @@ function renderList(){
   const rn=repeatList().length;
   if(book.f==="RW"&&!rn) book.f="all";
   if(book.f==="DONE"&&!ALL.some(w=>isDone(w.k))) book.f="all";
-  const chip=(v,l,n,dis)=>`<button type="button" data-f="${esc(v)}" aria-pressed="${book.f===v}" ${dis?"disabled":""}>${esc(l)} ${n}</button>`;
-  chips.innerHTML = chip("all","全部",ALL.length)+chip("M","中級",bySetM().length)+chip("L","4級",bySetL().length)+chip("A","頻出A",bySetA().length)+chip("B","頻出B",bySetB().length)+chip("D","頻出C",bySetD().length)+chip("HJ","漢字語",typeList("hj").length)+chip("MU","意味が多い語",typeList("mu").length)+chip("UD","増える・減る",udBook().length)
-    + gs.map(g=>chip("g:"+g,g,groupList(g).length)).join("")
+  // 色の点つき（一覧の単語の点と同じ色）
+  const chip=(v,l,n,dis,dot)=>`<button type="button" data-f="${esc(v)}" aria-pressed="${book.f===v}" ${dis?"disabled":""}>${dot?`<span class="dot ${dot}"></span>`:""}${esc(l)} ${n}</button>`;
+  chips.innerHTML = chip("all","全部",ALL.length)+chip("M","中級",bySetM().length,0,"M")+chip("L","4級",bySetL().length,0,"L")+chip("A","頻出A",bySetA().length,0,"A")+chip("B","頻出B",bySetB().length,0,"B")+chip("D","頻出C",bySetD().length,0,"D")+chip("HJ","漢字語",typeList("hj").length)+chip("MU","意味が多い語",typeList("mu").length)+chip("UD","増える・減る",udBook().length)
+    + gs.map((g,i)=>chip("g:"+g,g,groupList(g).length,0,"C"+(i%3))).join("")
     + chip("ADV","副詞",advList().length)+chip("W","苦手",wn,!wn)+chip("RW","くり返し苦手",rn,!rn)+chip("DONE","覚えた",ALL.filter(w=>isDone(w.k)).length,!ALL.some(w=>isDone(w.k)));
   chips.querySelectorAll("button").forEach(b=>b.onclick=()=>{book.f=b.dataset.f;renderList()});
   let items = book.f==="UD"?udBook():book.f==="HJ"?typeList("hj"):book.f==="MU"?typeList("mu"):book.f==="all"?ALL:book.f==="A"?bySetA():book.f==="B"?bySetB():book.f==="D"?bySetD():book.f==="M"?bySetM():book.f==="L"?bySetL():book.f==="ADV"?advList():book.f.startsWith("g:")?groupList(book.f.slice(2)):book.f==="DONE"?ALL.filter(w=>isDone(w.k)):book.f==="RW"?repeatList():weakList();

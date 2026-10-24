@@ -2,7 +2,9 @@
 function segBtn(group,val,label,sub,disabled){
   return `<button type="button" data-g="${group}" data-v="${esc(val)}" aria-pressed="${opt[group]===val}" ${disabled?"disabled":""}>${label}${sub!=null?`<small>${sub}</small>`:""}</button>`;
 }
-const ui = {more:false, gsec:{}};
+// ホームの開閉（free＝自由に練習、trend＝苦手の傾向）は次に開いたときも同じに
+const ui = Object.assign({more:false, gsec:{}, free:false, trend:false}, store.get("kq-ui",{}));
+const saveUi = () => store.set("kq-ui",{free:ui.free, trend:ui.trend});
 function home(){
   view="home";
   const wn=weakList().length, cn=customList().length, rn=repeatList().length;
@@ -22,7 +24,9 @@ function home(){
   ${bkNudgeHtml()}
   ${todayCard()}
   ${trendCard()}
-  <h2 class="sech">自由に練習</h2>
+  <section class="free">
+  <button type="button" class="foldh" id="freeh" aria-expanded="${ui.free}"><span><b>自由に練習</b><small>${setLabel} · ${formLabel} · ${modeLabel} · ${qN}問</small></span><i aria-hidden="true"></i></button>
+  <div class="free-b" id="free-b" ${ui.free?"":"hidden"}>
   <div class="group"><div class="label">出題範囲</div>
     <div class="seg srcs">
       ${[["M","中級","M",bySetM(),"3〜4級"],["L","4級","L",bySetL(),"4級"],["A","頻出A","A",bySetA(),"初級"],["B","頻出B","B",bySetB(),"初級"],["D","頻出C","D",bySetD(),"初級"],...groups().map((g,i)=>["g:"+g,g,"C"+(i%3),groupList(g)])].map(([v,name,dot,list,lv])=>{
@@ -61,7 +65,8 @@ function home(){
   <div class="startbar">
     <p class="status err" id="start-msg" role="status">${qN?"":conj?"この範囲には活用できる単語がありません":cloze?"この範囲には例文のある単語がありません":"この範囲には単語がありません"}</p>
     <button class="primary" id="start" ${qN?"":"disabled"}><span>はじめる</span><small>${setLabel} · ${formLabel} · ${modeLabel} · ${qN}問</small></button>
-  </div>`;
+  </div>
+  </div></section>`;
   bindTabs();
   bindBkNudge();
   $app.querySelectorAll(".seg button[data-g]").forEach(b=>b.onclick=()=>{opt[b.dataset.g]=b.dataset.v;store.set("kq-opt",opt);home()});
@@ -69,6 +74,10 @@ function home(){
   const udb=$app.querySelector("[data-ud]"); if(udb) udb.onclick=()=>{ if(opt.set==="UD") opt.set="W"; else { opt.set="UD"; opt.form="cloze" } store.set("kq-opt",opt); home() };
   const rwb=$app.querySelector("[data-rw]"); if(rwb) rwb.onclick=()=>{ opt.set = opt.set==="RW" ? "W" : "RW"; store.set("kq-opt",opt); home() };
   $app.querySelectorAll("[data-trend]").forEach(b=>b.onclick=()=>{ const v="WT:"+b.dataset.trend; opt.set = opt.set===v ? "W" : v; store.set("kq-opt",opt); home() });
+  const fh=document.getElementById("freeh");
+  fh.onclick=()=>{ ui.free=!ui.free; saveUi(); fh.setAttribute("aria-expanded",ui.free); document.getElementById("free-b").hidden=!ui.free };
+  const td=document.getElementById("trendbox"); if(td) td.addEventListener("toggle",()=>{ ui.trend=td.open; saveUi() });
+  const ts=document.getElementById("tstart"); if(ts) ts.onclick=()=>document.getElementById("start").click();
   document.getElementById("more").addEventListener("toggle",e=>{ ui.more=e.target.open });
   document.getElementById("start").onclick=()=>{
     if(!start(pool())) document.getElementById("start-msg").textContent = opt.form==="conj" ? "この範囲には活用できる動詞・形容詞がありません" : "この範囲には例文のある単語がありません。単語帳で例文を足すと出題できます";

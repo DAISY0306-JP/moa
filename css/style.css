@@ -151,6 +151,21 @@ body:has(.tabs) .startbar{bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0
 .tgo{font:inherit;font-size:.82rem;font-weight:700;border:0;border-radius:10px;padding:7px 12px;background:var(--accent);color:var(--accent-ink);cursor:pointer;white-space:nowrap}
 .task.done .tgo{background:var(--sunk);color:var(--fg)}
 .sech{font-size:.95rem;margin:6px 0 -6px;color:var(--fg)}
+/* ホームの開閉できる見出し（自由に練習・苦手の傾向） */
+.foldh{font:inherit;color:var(--fg);display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;padding:0;cursor:pointer;list-style:none}
+.foldh::-webkit-details-marker{display:none}
+.foldh>span{flex:1;min-width:0;display:flex;flex-direction:column}
+.foldh b{font-size:.95rem}
+.foldh small{font-size:.76rem;color:var(--muted);font-weight:500}
+.foldh i{flex:none;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s}
+.foldh[aria-expanded="true"] i,details[open]>.foldh i{transform:rotate(-135deg) translate(-2px,-2px)}
+.free{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column}
+.free-b{display:flex;flex-direction:column;gap:18px;margin-top:14px}
+.free .startbar{margin-inline:-15px;margin-bottom:-15px;border-radius:0 0 18px 18px;background:linear-gradient(to top,var(--surface) 72%,color-mix(in srgb,var(--surface) 0%,transparent))}
+.trend:not([open]){gap:0}
+.infobtn{font:inherit;font-size:.7rem;font-weight:700;width:18px;height:18px;line-height:16px;margin-left:6px;padding:0;border-radius:50%;border:1.5px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;vertical-align:1px}
+.infobtn[aria-expanded="true"]{background:var(--sunk);color:var(--fg)}
+.tinfo-b{display:flex;flex-direction:column;gap:8px}
 /* 設定：セグメント */
 .settings{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
 .seg.pills{display:flex;background:var(--sunk);border-radius:11px;padding:3px;gap:2px}
