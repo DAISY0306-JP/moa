@@ -1,5 +1,5 @@
 // 모아 データチェック
-// data/*.js と index.html の書き間違い（, の抜け、カッコの閉じ忘れなど）を見つけます。
+// data/*.js・js/*.js・index.html の書き間違い（, の抜け、カッコの閉じ忘れなど）を見つけます。
 // 使い方: node scripts/check-data.js
 const fs = require("fs");
 const path = require("path");
@@ -74,13 +74,27 @@ if (D) {
   }
 }
 
-// 3) index.html の中のスクリプト
+// 3) index.html が読み込むスクリプト（js/ 以下）と、index.html の中のスクリプト
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].forEach((m, i) => {
   try { new vm.Script(m[1], { filename: `index.html のスクリプト${i + 1}` }); }
   catch (e) { err(`index.html のスクリプト${i + 1} が読めません（${e.message}）`); }
 });
 for (const f of DATA) if (!html.includes(`src="${f}"`)) err(`index.html が ${f} を読み込んでいません`);
+const local = [...html.matchAll(/<script src="([^"]+)"|<link rel="stylesheet" href="(?!https?:)([^"]+)"/g)].map(m => m[1] || m[2]);
+for (const f of local) {
+  const fp = path.join(root, f);
+  if (!fs.existsSync(fp)) { err(`index.html が読み込む ${f} がありません`); continue; }
+  if (f.startsWith("js/")) {
+    try { new vm.Script(fs.readFileSync(fp, "utf8"), { filename: f }); }
+    catch (e) { err(`${f} が読めません（${e.message}）\n    → カッコや \` の閉じ忘れを確認してください`); }
+  }
+}
+for (const f of fs.readdirSync(path.join(root, "js"))) if (f.endsWith(".js") && !local.includes(`js/${f}`)) warn(`js/${f} は index.html から読み込まれていません`);
+
+// 4) オフライン用（sw.js）に、読み込むファイルがすべて入っているか
+const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
+for (const f of local) if (!sw.includes(`"./${f}"`)) err(`sw.js の SHELL に "./${f}" がありません（オフラインで開けなくなります）`);
 
 // 結果
 if (D) {

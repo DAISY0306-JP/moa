@@ -2,10 +2,13 @@
 // 自分のサイトのファイル（本体・データ）はネット優先：更新をすぐ反映し、オフラインのときだけ保存版を使う。
 // Google Fonts はキャッシュ優先。
 // ファイル構成を変えたときは VERSION を上げると古いキャッシュが消えます。
-const VERSION = "moa-v3";
+const VERSION = "moa-v4";
 const SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
+  "./css/style.css",
   "./data/words.js", "./data/grammar.js", "./data/writing.js",
+  "./js/tips.js", "./js/state.js", "./js/common.js", "./js/quiz.js", "./js/write51.js", "./js/gram.js",
+  "./js/menu.js", "./js/write53-54.js", "./js/book.js", "./js/log.js", "./js/main.js",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
 ];
 
